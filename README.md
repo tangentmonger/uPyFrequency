@@ -3,24 +3,21 @@ uPyFrequency
 
 A rough frequency counter in MicroPython for the ESP32.
 
-Approach: time how long it takes for the Pulse Counter peripheral to count N rising edges on the signal pin, and use that to calculate the frequency.
+1. Set up a periodic Timer and also the Pulse Counter. Start them at the same time.
+2. In the timer interrupt callback, get the number of pulses the Pulse Counter has seen, and also reset it to zero. Schedule more processing.
+3. In the scheduled function, do maths to find the frequency, given the period and the number of pulses.
 
-A higher value for N will give higher accuracy at the cost of speed.
-
-As the frequency slows, so will the rate of frequency updates provided by this code.
+Pulse Counter filter is important if the signal is noisy.
 
 The timing will be affected by MicroPython overheads so it's not the most accurate, but depending on your application this might be good enough.
 
 A better approach would be to use the RMT peripheral to very accurately set the sampling period (as demonstrated in e.g. https://github.com/DavidAntliff/esp32-freqcount). At time of writing MicroPython doesn't have this support for the RMT.
 
-Tested with a 1kHz signal and N=50 on an ESP32-S3, giving typical results:
-* 999.84Hz
-* 1000.16Hz
-* 999.84Hz
-* 1000.06Hz
-* 1000.02Hz
-* 1000.08Hz
-* 999.84Hz
-* 1000.16Hz
-* 999.84Hz
-
+Tested with a 1kHz signal and period=50ms on an ESP32-S3, giving typical results:
+* frequency: 1000.0Hz
+* frequency: 1000.0Hz
+* frequency: 980.0Hz
+* frequency: 1000.0Hz
+* frequency: 1000.0Hz
+* frequency: 1000.0Hz
+* frequency: 1000.0Hz
